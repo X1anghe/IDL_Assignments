@@ -1,11 +1,7 @@
-from keras.utils.np_utils import to_categorical
-from keras.models import Model, Sequential
+from keras.models import Sequential
 from keras.layers import Dense, Dropout, Flatten, Conv2D, MaxPooling2D, Input, BatchNormalization
 from keras import backend
 import keras
-from sklearn.model_selection import train_test_split
-import numpy as np
-import matplotlib.pyplot as plt
 
 
 def preprocessing(train_data, test_data):
@@ -17,7 +13,7 @@ def preprocessing(train_data, test_data):
     else:
         train_data = train_data.reshape(train_data.shape[0], img_rows, img_cols, 1)
         test_data = test_data.reshape(test_data.shape[0], img_rows, img_cols, 1)
-        input_shape = (img_rows, img_cols, 1)  #1在前在后
+        input_shape = (img_rows, img_cols, 1) 
 
     train_data = train_data.astype('float32')
     test_data = test_data.astype('float32')
@@ -27,10 +23,9 @@ def preprocessing(train_data, test_data):
     return train_data, test_data, input_shape
 
 
-def classfication(x_train, y_train, x_test, y_test, batch_size, epochs, lr, num_classes):
+def classfication(x_train, y_train, x_test, y_test, batch_size, epochs, lr, num_classes, input_shape):
 
     model = Sequential()
-    # Convolutional layers
     model.add(Input(shape=input_shape))
     model.add(Conv2D(filters=32,
                      kernel_size=(3, 3),
@@ -53,7 +48,7 @@ def classfication(x_train, y_train, x_test, y_test, batch_size, epochs, lr, num_
     model.add(MaxPooling2D(pool_size=(2, 2)))
     model.add(BatchNormalization())
     model.add(Dropout(0.25))
-    # Fully connected layers
+
     model.add(Flatten())
     model.add(Dense(units=256,
                     activation='relu',
@@ -79,39 +74,3 @@ def classfication(x_train, y_train, x_test, y_test, batch_size, epochs, lr, num_
 
 
 
-images_npy = '../Datasets/images.npy'
-labels_npy = '../Datasets/labels.npy'
-
-images = np.load(images_npy)
-labels = np.load(labels_npy)
-x_train, x_test, y_train, y_test = train_test_split(images, labels, train_size=0.8)
-
-classes_num = 12 * 2
-
-x_train, x_test, input_shape = preprocessing(x_train, x_test)
-y_train = y_train[:, 0] * 2 + (y_train[:, 1] * 2 / 60).astype('int32')
-y_test = y_test[:, 0] * 2 + (y_test[:, 1] * 2 / 60).astype('int32')
-# y_train = y_train[:, 0] * 20 + (y_train[:, 1] * 20 / 60).astype('int32')
-# y_test = y_test[:, 0] * 20 + (y_test[:, 1] * 20 / 60).astype('int32')
-
-y_train_trans2class = to_categorical(y_train, classes_num)
-y_test_trans2class = to_categorical(y_test, classes_num)
-
-# y_train = y_train[:, 0] + y_train[:, 1] / 60  #时 分
-# y_test = y_test[:, 0] + y_test[:, 1] / 60
-
-history, his = classfication(x_train, y_train_trans2class, x_test, y_test_trans2class, 128, 100, 0.001, classes_num)
-
-
-acc = his.history['loss']
-loss = his.history['categorical_accuracy']
-accVal = his.history['val_loss']
-lossVal = his.history['val_categorical_accuracy']
-epochs = range(1, len(acc) + 1)
-plt.title('Accuracy and Loss')
-plt.plot(epochs, acc, 'green', label='Training acc')
-plt.plot(epochs, loss, 'blue', label='Training loss')
-plt.plot(epochs, accVal, 'orange', label='Validation acc')
-plt.plot(epochs, lossVal, 'red', label='Validation loss')
-plt.legend()
-plt.show()
