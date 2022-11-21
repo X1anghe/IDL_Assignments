@@ -32,7 +32,7 @@ def custom_mae(y_true, y_pred):
     min_diff = tf.minimum(tf.math.add(12.0, abs_diff), abs_diff)
     return tf.reduce_mean(min_diff)
 
-def classfication(x_train, y_train, x_test, y_test, batch_size, epochs, lr, num_classes):
+def multi_classfication(x_train, y_train, x_test, y_test, batch_size, epochs, lr, num_classes, input_shape):
 
     input = Input(shape=input_shape)
 
@@ -87,44 +87,3 @@ def classfication(x_train, y_train, x_test, y_test, batch_size, epochs, lr, num_
     print('Test loss:', score[0])
     print('Test mse:', score[1])
     return multi_model, his
-
-
-
-images_npy = '../Datasets/images.npy'
-labels_npy = '../Datasets/labels.npy'
-
-images = np.load(images_npy)
-labels = np.load(labels_npy)
-x_train, x_test, y_train, y_test = train_test_split(images, labels, train_size=0.8)
-x_train, x_test, input_shape = preprocessing(x_train, x_test)
-
-classes_num = 12
-
-hours_train = y_train[:,0]
-minutes_train = y_train[:,1]
-hours_test = y_test[:,0]
-minutes_test = y_test[:,1]
-
-y_train_hours = to_categorical(hours_train, classes_num)
-y_train_mintues = minutes_train / 60
-y_test_hours = to_categorical(hours_test, classes_num)
-y_test_mintues = minutes_test / 60
-
-y_train = [y_train_hours, y_train_mintues]
-y_test = [y_test_hours, y_test_mintues]
-
-history, his = classfication(x_train, y_train, x_test, y_test, 128, 100, 0.001, classes_num)
-
-
-acc = his.history['loss']
-loss = his.history['categorical_accuracy']
-accVal = his.history['val_loss']
-lossVal = his.history['val_categorical_accuracy']
-epochs = range(1, len(acc) + 1)
-plt.title('Accuracy and Loss')
-plt.plot(epochs, acc, 'green', label='Training acc')
-plt.plot(epochs, loss, 'blue', label='Training loss')
-plt.plot(epochs, accVal, 'orange', label='Validation acc')
-plt.plot(epochs, lossVal, 'red', label='Validation loss')
-plt.legend()
-plt.show()

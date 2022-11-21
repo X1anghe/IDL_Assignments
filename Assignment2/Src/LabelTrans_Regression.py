@@ -16,7 +16,7 @@ def preprocessing(train_data, test_data):
     else:
         train_data = train_data.reshape(train_data.shape[0], img_rows, img_cols, 1)
         test_data = test_data.reshape(test_data.shape[0], img_rows, img_cols, 1)
-        input_shape = (img_rows, img_cols, 1)  #1在前在后
+        input_shape = (img_rows, img_cols, 1) 
 
     train_data = train_data.astype('float32')
     test_data = test_data.astype('float32')
@@ -48,15 +48,10 @@ def custom_mae(y_true, y_pred):
     min_diff = tf.minimum(min_diff1, abs_diff2)
     return tf.reduce_mean(min_diff)
 
-def regression(x_train, y_train, x_test, y_test, batch_size, epochs):
+def label_trans_regression(x_train, y_train, x_test, y_test, batch_size, epochs, input_shape):
 
     model = Sequential()
-    # Convolutional layers
     model.add(Input(shape=input_shape))
-    # model.add(Conv2D(filters=32,
-    #                  kernel_size=(3, 3),
-    #                  activation='relu',
-    #                  kernel_regularizer='l2'))
     model.add(Conv2D(filters=32,
                      kernel_size=(3, 3),
                      activation='relu',
@@ -64,10 +59,6 @@ def regression(x_train, y_train, x_test, y_test, batch_size, epochs):
     model.add(MaxPooling2D(pool_size=(2, 2)))
     model.add(BatchNormalization())
     model.add(Dropout(0.25))
-    # model.add(Conv2D(filters=64,
-    #                  kernel_size=(3, 3),
-    #                  activation='relu',
-    #                  kernel_regularizer='l2'))
     model.add(Conv2D(filters=64,
                      kernel_size=(3, 3),
                      activation='relu',
@@ -75,10 +66,6 @@ def regression(x_train, y_train, x_test, y_test, batch_size, epochs):
     model.add(MaxPooling2D(pool_size=(2, 2)))
     model.add(BatchNormalization())
     model.add(Dropout(0.25))
-    # model.add(Conv2D(filters=128,
-    #                  kernel_size=(3, 3),
-    #                  activation='relu',
-    #                  kernel_regularizer='l2'))
     model.add(Conv2D(filters=128,
                      kernel_size=(3, 3),
                      activation='relu',
@@ -86,7 +73,7 @@ def regression(x_train, y_train, x_test, y_test, batch_size, epochs):
     model.add(MaxPooling2D(pool_size=(2, 2)))
     model.add(BatchNormalization())
     model.add(Dropout(0.25))
-    # Fully connected layers
+
     model.add(Flatten())
     model.add(Dense(units=256,
                     activation='relu',
@@ -110,24 +97,5 @@ def regression(x_train, y_train, x_test, y_test, batch_size, epochs):
     print('Test mse:', score[1])
     return model, his
 
-
-
-images_npy = '../Datasets/images.npy'
-labels_npy = '../Datasets/labels.npy'
-
-images = np.load(images_npy)
-labels = np.load(labels_npy)
-
-labels_trans = label_transform(labels)
-# labels_trans_hours = labels_trans[:, 0:2]
-# labels_trans_minutes = labels_trans[:, 2:]
-
-x_train, x_test, y_train, y_test = train_test_split(images, labels_trans, train_size=0.8)
-
-x_train, x_test, input_shape = preprocessing(x_train, x_test)
-# y_train = y_train[:, 0] + y_train[:, 1] / 60  #时 分
-# y_test = y_test[:, 0] + y_test[:, 1] / 60
-
-history, his = regression(x_train, y_train, x_test, y_test, 128, 30)
 
 
