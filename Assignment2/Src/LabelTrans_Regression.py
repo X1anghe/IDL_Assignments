@@ -36,8 +36,10 @@ def label_transform(time_label):
         trans_label[i] = time
     return trans_label
 
-def custom_diff(y_true, y_pred):
-    return tf.sqrt(tf.reduce_sum(tf.square(y_true - y_pred)) * 3600) / 3601
+def custom_mse(y_true, y_pred):
+    return tf.sqrt((tf.reduce_sum(tf.square(y_true - y_pred)* [3600, 3600, 1, 1]) ) / 3601)
+# def custom_mse(y_true, y_pred):
+#     return tf.sqrt((tf.reduce_sum(tf.math.abs(y_true - y_pred)) * [3600, 3600, 1, 1] ) / 3601)
 
 
 def custom_mae(y_true, y_pred):
@@ -73,17 +75,25 @@ def label_trans_regression(x_train, y_train, x_test, y_test, batch_size, epochs,
     model.add(MaxPooling2D(pool_size=(2, 2)))
     model.add(BatchNormalization())
     model.add(Dropout(0.25))
-
     model.add(Flatten())
+
     model.add(Dense(units=256,
                     activation='relu',
                     kernel_regularizer='l2'))
     model.add(Dense(units=128,
                     activation='relu',
                     kernel_regularizer='l2'))
-    model.add(Dense(units=1, activation='linear'))
+    model.add(Dense(units=4, activation='linear'))
+    # model.add(Flatten())
+    # model.add(Dense(units=4096,
+    #                 activation='relu',
+    #                 kernel_regularizer='l2'))
+    # model.add(Dense(units=4096,
+    #                 activation='relu',
+    #                 kernel_regularizer='l2'))
+    # model.add(Dense(units=1, activation='linear'))
 
-    model.compile(loss=custom_diff,
+    model.compile(loss=custom_mse,
                   optimizer='adam',
                   metrics='mae')
 

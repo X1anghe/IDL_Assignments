@@ -56,8 +56,8 @@ def classfication(x_train, y_train, x_test, y_test, batch_size, epochs, lr, num_
     model.add(Dense(units=128,
                     activation='relu',
                     kernel_regularizer='l2'))
-    model.add(Dense(num_classes, activation='softmax'))
-
+    model.add(Dense(units=num_classes,
+                    activation = "softmax"))
     model.compile(loss=keras.losses.categorical_crossentropy,
                 optimizer=keras.optimizers.Adam(learning_rate=lr),
                 metrics=['categorical_accuracy'])

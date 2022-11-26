@@ -21,8 +21,8 @@ def network(x_train, y_train,
             initializer,
             regularizer,
             activation,
-            optimizer,
             dropout,
+            lr,
             plot_num):
 
     # input image dimensions
@@ -74,7 +74,7 @@ def network(x_train, y_train,
                     activation='softmax'))
 
     model.compile(loss=keras.losses.categorical_crossentropy,
-                optimizer = optimizer,
+                optimizer = keras.optimizers.SGD(learning_rate=lr),
                 metrics=['accuracy'])
 
     history = model.fit(x_train, y_train,
@@ -90,24 +90,27 @@ def network(x_train, y_train,
     print('Test loss:', score[0])
     print('Test accuracy:', score[1])
 
-
-    acc = history.history['accuracy']
-    loss = history.history['loss']
-    accVal = history.history['val_accuracy']
+    # accVal = history.history['val_accuracy']
     lossVal = history.history['val_loss']
-    epochs = range(1, len(acc) + 1)
+    return lossVal
     
-    # plt.title('Accuracy and Loss')
-    # fig = plt.figure()
-    ax1 = plt.subplot()
-    ax2 = ax1.twinx()
-    ax2.set_ylabel('Accuracy', fontsize=15)
-    ax1.set_ylabel('Loss', fontsize=15)
-    ax1.set_xlabel('epochs', fontsize=15)
-    L1, = ax1.plot(epochs, acc, 'green', label='Training Accuracy')
-    L2, = ax2.plot(epochs, loss, 'blue', label='Training Loss')
-    L3, = ax1.plot(epochs, accVal, 'orange', label='Test Accuracy')
-    L4, = ax2.plot(epochs, lossVal, 'red', label='Test Loss')
-    plt.legend(handles = [L1, L2, L3, L4], loc = 'upper right', fontsize=10)
-    plt.savefig('../fig/'+'Basic_minist_cnn'+'.jpg')
-    plt.show()
+    # acc = history.history['accuracy']
+    # loss = history.history['loss']
+    # accVal = history.history['val_accuracy']
+    # lossVal = history.history['val_loss']
+    # epochs = range(1, len(acc) + 1)
+    
+    # # plt.title('Accuracy and Loss')
+    # # fig = plt.figure()
+    # ax1 = plt.subplot()
+    # ax2 = ax1.twinx()
+    # ax2.set_ylabel('Loss', fontsize=15)
+    # ax1.set_ylabel('Accuracy', fontsize=15)
+    # ax1.set_xlabel('epochs', fontsize=15)
+    # L1, = ax1.plot(epochs, acc, 'green', label='Training Accuracy')
+    # L2, = ax2.plot(epochs, loss, 'blue', label='Training Loss')
+    # L3, = ax1.plot(epochs, accVal, 'orange', label='Test Accuracy')
+    # L4, = ax2.plot(epochs, lossVal, 'red', label='Test Loss')
+    # plt.legend(handles = [L1, L2, L3, L4], loc = 'upper right', fontsize=10)
+    # plt.savefig('../fig/'+'Basic_minist_cnn'+'.jpg')
+    # plt.show()

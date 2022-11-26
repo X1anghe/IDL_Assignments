@@ -28,13 +28,21 @@ def preprocessing(train_data, test_data):
 #     min_diff1 = tf.minimum(abs_diff1, tf.math.abs(12.0 + y_true - y_pred))
 #     min_diff2 = tf.minimum(abs_diff1, tf.math.abs(y_true - y_pred - 12.0))
 #     return tf.reduce_mean(tf.maximum(min_diff1,min_diff2))  
+# def custom_mae(y_true, y_pred):
+#     j_0 = tf.minimum(y_pred, 0)
+#     j_1 = tf.maximum(y_pred-12, 0)
+#     diff1 = tf.math.square(y_true - y_pred)
+#     diff2 = tf.math.square(y_true - y_pred - 12.0)
+#     return tf.reduce_mean(tf.minimum(diff1, diff2)) + 5.0 * (j_1 - j_0)
 
 def custom_mae(y_true, y_pred):
-    j_0 = tf.minimum(y_pred, 0)
-    j_1 = tf.maximum(y_pred-12, 0)
-    diff1 = tf.math.square(y_true - y_pred)
-    diff2 = tf.math.square(y_true - y_pred - 12.0)
-    return tf.reduce_mean(tf.minimum(diff1, diff2)) + 5.0 * (j_1 - j_0)
+    tail = 0.001
+    penalty = 10.0
+    j_0 = tf.minimum(y_pred, 0.0) - tail
+    j_1 = tf.maximum(y_pred-12.0, 0.0) + tail
+    diff1 = tf.math.abs(y_true - y_pred)
+    diff2 = tf.math.abs(y_true - y_pred - 12.0)
+    return tf.minimum(diff1, diff2) + penalty * (tf.math.log(j_1) + tf.math.log(-j_0) - 2.0*tf.math.log(tail))
 
 def regression(x_train, y_train, x_test, y_test, batch_size, epochs, lr, input_shape):
 
@@ -46,14 +54,14 @@ def regression(x_train, y_train, x_test, y_test, batch_size, epochs, lr, input_s
                      kernel_regularizer='l2'))
     model.add(MaxPooling2D(pool_size=(2, 2)))
     model.add(BatchNormalization())
-    model.add(Dropout(0.25))
+    # model.add(Dropout(0.25))
     model.add(Conv2D(filters=64,
                      kernel_size=(3, 3),
                      activation='relu',
                      kernel_regularizer='l2'))
     model.add(MaxPooling2D(pool_size=(2, 2)))
     model.add(BatchNormalization())
-    model.add(Dropout(0.25))
+    # model.add(Dropout(0.25))
     model.add(Conv2D(filters=128,
                      kernel_size=(3, 3),
                      activation='relu',
@@ -69,11 +77,12 @@ def regression(x_train, y_train, x_test, y_test, batch_size, epochs, lr, input_s
     model.add(Dense(units=128,
                     activation='relu',
                     kernel_regularizer='l2'))
+    # model.add(Dropout(0.25))
     model.add(Dense(units=1, activation='linear'))
 
-    model.compile(loss=custom_mae,
+    model.compile(loss='mae',
                   optimizer=keras.optimizers.Adam(learning_rate=lr),
-                  metrics='mae')
+                  metrics=custom_mae)
 
     his = model.fit(x_train, y_train,
               batch_size=batch_size,
